@@ -2,19 +2,21 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <script defer src="index.js" charset="utf-8"></script>
+    <script defer src="index.js"></script>
     <link rel="stylesheet" href="style.css">
     <title>Congress Stock Watch</title>
+    <link rel="shortcut icon" type="image/x-icon" href="./assets/favicon.ico">
   </head>
   <body>
     <header id="header">
-        <img id="logo" src="./assests/Congress.png">
+        <img id="logo" src="./assets/Congress.png">
         <div id="headerInfo">
             <div id="title">CONGRESS STOCK WATCH</div>
-            <div id="disclaimer">This site presents some of the data compiled in the House Stock Watcher API and is for <b>ENTERTAINMENT PURPOSES ONLY.</b><br>This is a non-commercial, educational project.</div>
+            <div id="disclaimer">This site presents refined data from the transcribed House Stock Watcher API for <b>ENTERTAINMENT PURPOSES ONLY.</b>
+                <br>This is a not-for-profit, educational project created by <b>Ben Kurose</b> and <b>Shannone Rhea</b> for the FlatIron School.</div>
         </div>    
     </header>
-    <div id="navTitle">RECENT CONGRESSIONAL TRANSACTIONS OVER $1,000,000</div>
+    <div id="navTitle">RECENT CONGRESSIONAL TRANSACTIONS OVER <span style='color:red'>$1,000,000</span></div>
     <nav id="navigationBar">
         <!-- <div class="navItem"> 
             <h3>Disclosure Date:</h3>
@@ -28,14 +30,22 @@
             <h2 id="member">Congress Member: Hon April Fool</h2>
             <h2 id="description">Asset Description: Microsoftie</h2>
             <h2 id="amount">Amount Range: $1,000,000 - $5,000,000</h2>
-            <h2 id="ticker">Ticker: MRST</h2>
+            <h2>Ticker: <span id="ticker" style="color:green">MRST</span></h2>
             <button id="favorite">Favorite ☆</button>
         </section>
     </div>
     <div>
+        <p></p>
+    </div>
+    <div id="transactionsList" class="hidden">
+        <h6 id="transactionsHeader"></h6>
+        <ul id="transactionsUl">
+        </ul>
+    </div>
+    <div>
         <section id="favoriteList">
-            <h6>Favorited Disclosures:</h6>
-            <div>Favorited Item</div>
+            <h6></h6>
+            <div></div>
         </section>
     </div>
   </body>

@@ -45,8 +45,8 @@ function renderDetails(item){
     description.innerText = `Description: ${item.asset_description}`
     amount.innerText = `Amount: ${item.amount}`
     
-    if(item.ticker == '--'){ticker.textContent = `Ticker Symbol: Not Publicly Traded`}
-    else{ticker.innerText = `Ticker Symbol: ${item.ticker}`}
+    if(item.ticker == '--'){ticker.textContent = `Not Publicly Traded`}
+    else{ticker.innerText = `${item.ticker}`}
 
     item.favorite ? favorite.innerText = 'Favorite ⭐' : favorite.innerText = 'Favorite ☆'
 }
@@ -59,8 +59,55 @@ function updateFav(e, item){
     renderDetails(item)
 }
 
-// function sortByTicker
+document.querySelector('#ticker').addEventListener('click', sortByTicker)
 
+function sortByTicker(){
+    fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json')
+    .then(res => res.json())
+    .then(res => {
+        let oldList = document.querySelector('#transactionsUl')
+        oldList.remove()
+
+        let containerDiv = document.querySelector('#transactionsList')
+        containerDiv.classList = false
+
+        let header = document.querySelector('#transactionsHeader')
+        header.textContent = `Recent Congressional Transactions for ${itemGlobal.ticker}:`
+
+        let transactionsUl = document.createElement('ul')
+        transactionsUl.id = 'transactionsUl'
+        containerDiv.append(transactionsUl)
+
+        let sortedDisclosures = res.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime());
+        console.log(sortedDisclosures)
+
+        sortedDisclosures.forEach(item => {
+            if(item.ticker == itemGlobal.ticker){
+                handleUpdateTicker(item)
+            }
+        })
+        
+
+
+    })
+}
+
+function handleUpdateTicker(item){
+    let transactionsUl = document.querySelector('#transactionsUl')
+    let transactionLi = document.createElement('li')
+    let date = document.createElement('h7')
+    let member = document.createElement('p')
+    let description = document.createElement('p')
+    let amount = document.createElement('p')
+
+    date.textContent = `Date: ${item.transaction_date}`
+    member.textContent = `Congress Member: ${item.representative}`
+    description.textContent = `Description: ${item.asset_description}`
+    amount.textContent = `Amount: ${item.amount}`
+
+    transactionLi.append(date, member, description, amount)
+    transactionsUl.append(transactionLi)
+}
 
 // .amount categories
 // '$1,001 - $15,000'⭐
