@@ -2,6 +2,7 @@ fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_tran
 .then(res => res.json())
 .then(res => {
     let disclosures = (res.filter(item => item['amount'] == '$1,000,001 - $5,000,000' || item['amount'] == '$5,000,001 - $25,000,000' || item['amount'] == '$25,000,001 - $50,000,000' || item['amount'] == '$50,000,000 +'))
+    disclosures = disclosures.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime())
     console.log(disclosures)
     disclosures.forEach(item => renderNavItem(item))
     renderDetails(disclosures[0])
@@ -58,6 +59,9 @@ function updateFav(e, item){
     renderDetails(item)
 }
 
+// function sortByTicker
+
+
 // .amount categories
 // '$1,001 - $15,000'⭐
 // '$15,001 - $50,000'
@@ -67,4 +71,3 @@ function updateFav(e, item){
 // '$5,000,001 - $25,000,000'
 // '$25,000,001 - $50,000,000'
 // '$50,000,000 +'
-
