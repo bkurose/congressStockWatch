@@ -133,7 +133,7 @@ function updateTicker(){
 
         sortedDisclosures.forEach(item => {
             if(item.ticker == itemGlobal.ticker){
-                handleUpdateList(item)
+                handleUpdateTicker(item)
             }
         })
     })
@@ -162,7 +162,7 @@ function updateMember(){
 
         sortedDisclosures.forEach(item => {
             if(item.representative == itemGlobal.representative){
-                handleUpdateList(item)
+                handleUpdateMember(item)
             }
         })
     })
@@ -190,14 +190,14 @@ function updateDate(){
 
         sortedDisclosures.forEach(item => {
             if(item.transaction_date == itemGlobal.transaction_date){
-                handleUpdateList(item)
+                handleUpdateDate(item)
             }
         })
     })
 }
 
 //handles updating new data for display
-function handleUpdateList(item){
+function handleUpdateTicker(item){
     let transactionsUl = document.querySelector('#transactionsUl')
     let transactionLi = document.createElement('li')
     let date = document.createElement('h7')
@@ -205,7 +205,7 @@ function handleUpdateList(item){
     let description = document.createElement('p')
     let amount = document.createElement('p')
 
-    date.textContent = `Date: ${new Date(item.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
+    date.textContent = `Transaction Date: ${new Date(item.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
     let name = nameFix(item)
     member.textContent = `Congress Member: ${name}`
     description.textContent = `Description: ${item.asset_description}`
@@ -215,8 +215,40 @@ function handleUpdateList(item){
     transactionsUl.append(transactionLi)
 }
 
+function handleUpdateMember(item){
+    let transactionsUl = document.querySelector('#transactionsUl')
+    let transactionLi = document.createElement('li')
+    let date = document.createElement('h7')
+    let ticker = document.createElement('p')
+    let description = document.createElement('p')
+    let amount = document.createElement('p')
 
+    date.textContent = `Transaction Date: ${new Date(item.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
+    ticker.textContent = `Ticker: ${item.ticker}`
+    description.textContent = `Description: ${item.asset_description}`
+    amount.textContent = `Amount: ${item.amount}`
 
+    transactionLi.append(ticker, date, description, amount)
+    transactionsUl.append(transactionLi)
+}
+
+function handleUpdateDate(item){
+    let transactionsUl = document.querySelector('#transactionsUl')
+    let transactionLi = document.createElement('li')
+    let ticker = document.createElement('h7')
+    let member = document.createElement('p')
+    let description = document.createElement('p')
+    let amount = document.createElement('p')
+
+    ticker.textContent = `Ticker: ${item.ticker}`
+    let name = nameFix(item)
+    member.textContent = `Congress Member: ${name}`
+    description.textContent = `Description: ${item.asset_description}`
+    amount.textContent = `Amount: ${item.amount}`
+
+    transactionLi.append(ticker, member, description, amount)
+    transactionsUl.append(transactionLi)
+}
 
 //get chart data:
 function renderChartData(){
