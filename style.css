@@ -45,8 +45,15 @@ body {
     font-size: 60px;
 }
 
-#display {
+#chartContainer {
     display: flex;
+    height: 520px;
+}
+
+#display {
+    width: 30%;
+    margin-right: 2%;
+    margin-left: 2%;
 }
 
 #favoriteList {
@@ -81,9 +88,8 @@ h6 {
 }
 
 #transactionsList {
-    display: flex;
+    display: block;
     flex-direction: column;
-    flex-wrap: nowrap;
     justify-content: left ;
     overflow-y: scroll;
     border: 4px solid darkgrey;
@@ -101,7 +107,12 @@ button{
 }
 
 canvas{
-    max-width: 90%;
-    margin-right: 5%;
-    margin-left: 5%;
+    max-height: 500px;
+    max-width: 60%;
+    margin-right: 3%;
+    margin-left: 3%;
+}
+
+h1 {
+    font-size: 30pt;
 }

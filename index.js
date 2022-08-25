@@ -4,10 +4,11 @@ fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_tran
 .then(res => {
     let disclosures = (res.filter(item => item['amount'] == '$1,000,001 - $5,000,000' || item['amount'] == '$5,000,001 - $25,000,000' || item['amount'] == '$25,000,001 - $50,000,000' || item['amount'] == '$50,000,000 +'))
     disclosures = disclosures.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime())
-    // console.log(disclosures)
+    console.log(disclosures)
     disclosures.forEach(item => renderNavItem(item))
     renderDetails(disclosures[0])
     renderChartData()
+    updateTicker()
 })
 
 //populates Navigation Bar
@@ -32,6 +33,7 @@ function renderNavItem(item){
     container.addEventListener('click', () => {
         renderDetails(item)
         renderChartData()
+        updateTicker()
     })
 }
 
@@ -84,7 +86,7 @@ function updateTicker(){
         containerDiv.classList = false
 
         let header = document.querySelector('#transactionsHeader')
-        header.textContent = `Recent Congressional Transactions for ${itemGlobal.ticker}:`
+        header.textContent = itemGlobal.ticker == '--' ? `Recent Congressional Transactions on Other Assets:` : `Recent Congressional Transactions for ${itemGlobal.ticker}:`
 
         let transactionsUl = document.createElement('ul')
         transactionsUl.id = 'transactionsUl'
@@ -194,7 +196,7 @@ function renderChartData(){
 
         let chart = document.querySelector('#chart').getContext('2d');
         
-        let title =  `Number of Congressional Transactions on ${itemGlobal.ticker} Over Past Year`
+        let title = itemGlobal.ticker == '--' ? `Number of Congressional Transactions Over Past Year on Other Assets` : `Number of Congressional Transactions on ${itemGlobal.ticker} Over Past Year`
 
         let data = {
             labels: monthLabelSorted,
