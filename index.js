@@ -3,7 +3,7 @@ fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_tran
 .then(res => res.json())
 .then(res => {
     let disclosures = (res.filter(item => item['amount'] == '$1,000,001 - $5,000,000' || item['amount'] == '$5,000,001 - $25,000,000' || item['amount'] == '$25,000,001 - $50,000,000' || item['amount'] == '$50,000,000 +'))
-    disclosures = disclosures.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime())
+    disclosures = disclosures.sort((transaction1, transaction2) => new Date(transaction2.transaction_date).getTime() - new Date(transaction1.transaction_date).getTime())
     console.log(disclosures)
     disclosures.forEach((item, i) => {
         item.id = i++
@@ -108,7 +108,9 @@ document.querySelector('#ticker').addEventListener('click', updateTicker)
 
 document.querySelector('#member').addEventListener('click', updateMember)
 
-document.querySelector('#tranDate').addEventListener('click', updateDate)
+document.querySelector('#tranDate').addEventListener('click', updateTranDate)
+
+document.querySelector('#disDate').addEventListener('click', updateDisDate)
 
 //GET request, clears last request, sort and refine dataset, displays new data
 function updateTicker(){
@@ -128,7 +130,7 @@ function updateTicker(){
         transactionsUl.id = 'transactionsUl'
         containerDiv.append(transactionsUl)
 
-        let sortedDisclosures = res.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime());
+        let sortedDisclosures = res.sort((transaction1, transaction2) => new Date(transaction2.transaction_date).getTime() - new Date(transaction1.transaction_date).getTime());
         // console.log(sortedDisclosures)
 
         sortedDisclosures.forEach(item => {
@@ -157,7 +159,7 @@ function updateMember(){
         transactionsUl.id = 'transactionsUl'
         containerDiv.append(transactionsUl)
 
-        let sortedDisclosures = res.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime());
+        let sortedDisclosures = res.sort((transaction1, transaction2) => new Date(transaction2.transaction_date).getTime() - new Date(transaction1.transaction_date).getTime());
         // console.log(sortedDisclosures)
 
         sortedDisclosures.forEach(item => {
@@ -168,7 +170,7 @@ function updateMember(){
     })
 }
 
-function updateDate(){
+function updateTranDate(){
     fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json')
     .then(res => res.json())
     .then(res => {
@@ -190,7 +192,35 @@ function updateDate(){
 
         sortedDisclosures.forEach(item => {
             if(item.transaction_date == itemGlobal.transaction_date){
-                handleUpdateDate(item)
+                handleUpdateTranDate(item)
+            }
+        })
+    })
+}
+
+function updateDisDate(){
+    fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json')
+    .then(res => res.json())
+    .then(res => {
+        let oldList = document.querySelector('#transactionsUl')
+        oldList.remove()
+
+        let containerDiv = document.querySelector('#transactionsList')
+        containerDiv.classList = false
+
+        let header = document.querySelector('#transactionsHeader')
+        header.textContent = `Congressional Transactions Disclosed on ${new Date(itemGlobal.disclosure_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}:`
+
+        let transactionsUl = document.createElement('ul')
+        transactionsUl.id = 'transactionsUl'
+        containerDiv.append(transactionsUl)
+
+        let sortedDisclosures = res.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime());
+        // console.log(sortedDisclosures)
+
+        sortedDisclosures.forEach(item => {
+            if(item.disclosure_date == itemGlobal.disclosure_date){
+                handleUpdateDisDate(item)
             }
         })
     })
@@ -224,7 +254,7 @@ function handleUpdateMember(item){
     let amount = document.createElement('p')
 
     date.textContent = `Transaction Date: ${new Date(item.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
-    ticker.textContent = `Ticker: ${item.ticker}`
+    ticker.textContent = item.ticker == '--' ? `Other Assets` : `Ticker: ${item.ticker}`
     description.textContent = `Description: ${item.asset_description}`
     amount.textContent = `Amount: ${item.amount}`
 
@@ -232,7 +262,7 @@ function handleUpdateMember(item){
     transactionsUl.append(transactionLi)
 }
 
-function handleUpdateDate(item){
+function handleUpdateTranDate(item){
     let transactionsUl = document.querySelector('#transactionsUl')
     let transactionLi = document.createElement('li')
     let ticker = document.createElement('h7')
@@ -240,7 +270,25 @@ function handleUpdateDate(item){
     let description = document.createElement('p')
     let amount = document.createElement('p')
 
-    ticker.textContent = `Ticker: ${item.ticker}`
+    ticker.textContent = item.ticker == '--' ? `Other Assets` : `Ticker: ${item.ticker}`
+    let name = nameFix(item)
+    member.textContent = `Congress Member: ${name}`
+    description.textContent = `Description: ${item.asset_description}`
+    amount.textContent = `Amount: ${item.amount}`
+
+    transactionLi.append(ticker, member, description, amount)
+    transactionsUl.append(transactionLi)
+}
+
+function handleUpdateDisDate(item){
+    let transactionsUl = document.querySelector('#transactionsUl')
+    let transactionLi = document.createElement('li')
+    let ticker = document.createElement('h7')
+    let member = document.createElement('p')
+    let description = document.createElement('p')
+    let amount = document.createElement('p')
+
+    ticker.textContent = item.ticker == '--' ? `Other Assets` : `Ticker: ${item.ticker}`
     let name = nameFix(item)
     member.textContent = `Congress Member: ${name}`
     description.textContent = `Description: ${item.asset_description}`
