@@ -99,3 +99,9 @@ h6 {
 button{
     font-size: 16pt;
 }
+
+canvas{
+    max-width: 90%;
+    margin-right: 5%;
+    margin-left: 5%;
+}
