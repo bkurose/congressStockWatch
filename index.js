@@ -5,10 +5,12 @@ fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_tran
     let disclosures = (res.filter(item => item['amount'] == '$1,000,001 - $5,000,000' || item['amount'] == '$5,000,001 - $25,000,000' || item['amount'] == '$25,000,001 - $50,000,000' || item['amount'] == '$50,000,000 +'))
     disclosures = disclosures.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime())
     console.log(disclosures)
-    disclosures.forEach(item => renderNavItem(item))
+    disclosures.forEach((item, i) => {
+        item.id = i++
+        renderNavItem(item)
+    })
     renderDetails(disclosures[0])
     renderChartData()
-    updateTicker()
 })
 
 //populates Navigation Bar
@@ -17,24 +19,44 @@ function renderNavItem(item){
     let container = document.createElement('div')
     container.className = 'navItem'
     let date = document.createElement('h3')
-    let member = document.createElement('h4')
+    let member = document.createElement('h3')
     let ticker = document.createElement('h4')
+    let favoriteStar = document.createElement('p')
 
     item.favorite = false
 
-    date.textContent = `${item.transaction_date}`
-    member.textContent = `${item.representative}`
+    favoriteStar.className = 'hidden'
+    favoriteStar.textContent = '⭐'
+    favoriteStar.id =`a${item.id}`
+    
+    date.textContent = `${new Date(item.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
+    let name = nameFix(item)
+    member.textContent = `${name}`
 
     if(item.ticker == '--'){ticker.textContent = `Not Publicly Traded`}
     else{ticker.innerText = `${item.ticker}`}
 
-    container.append(date, member,ticker)
+    container.append(favoriteStar, ticker, member, date)
     navBar.append(container)
     container.addEventListener('click', () => {
         renderDetails(item)
         renderChartData()
-        updateTicker()
+        let containerDiv = document.querySelector('#transactionsList')
+        containerDiv.classList = 'hidden'
     })
+}
+
+function nameFix(item){
+    if(item.representative.includes('Dr ')){
+        let honTrim = item.representative.replace('Hon. ', '')
+        let drTrim = honTrim.replace('Dr ', '')
+        let trimFinal = 'Dr. ' + drTrim
+        return trimFinal.toString()
+    }
+    else{
+        let honTrim = item.representative.replace('Hon. ', '')
+        return honTrim.toString()
+    }
 }
 
 //allows global access to the particular item in the details section
@@ -43,15 +65,19 @@ let itemGlobal;
 //renders the details from the clicked navigation element into the details section
 function renderDetails(item){
     itemGlobal = item
-    let date = document.querySelector('#date')
+    let tranDate = document.querySelector('#tranDate')
+    let disDate = document.querySelector('#disDate')
     let member = document.querySelector('#member')
     let description = document.querySelector('#description')
     let amount = document.querySelector('#amount')
     let ticker = document.querySelector('#ticker')
     let favorite = document.querySelector('#favorite')
 
-    date.innerText = `Transaction Date: ${item.transaction_date}`
-    member.innerText = `Congress Member: ${item.representative}`
+    tranDate.innerText = `${new Date(item.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
+    disDate.innerText = `${new Date(item.disclosure_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
+
+    let name = nameFix(item)
+    member.innerText = `${name}`
     description.innerText = `Description: ${item.asset_description}`
     amount.innerText = `Amount: ${item.amount}`
     
@@ -59,20 +85,30 @@ function renderDetails(item){
     else{ticker.innerText = `${item.ticker}`}
 
     item.favorite ? favorite.innerText = 'Favorite ⭐' : favorite.innerText = 'Favorite ☆'
+
 }
 
 //adds favorite button
-document.querySelector('#favorite').addEventListener('click', (e) => updateFav(e, itemGlobal))
+document.querySelector('#favorite').addEventListener('click', (e) => {
+    updateFav(e, itemGlobal)
+    document.querySelector
+})
+
 
 //updates favorite status
 function updateFav(e, item){
-    // console.log(e)
     item.favorite = !item.favorite;
-    renderDetails(item)
+    let navFav = document.querySelector(`#a${item.id}`);
+    navFav.classList.toggle('hidden');
+    renderDetails(item);
 }
 
 //add sorting clickable
 document.querySelector('#ticker').addEventListener('click', updateTicker)
+
+document.querySelector('#member').addEventListener('click', updateMember)
+
+document.querySelector('#tranDate').addEventListener('click', updateDate)
 
 //GET request, clears last request, sort and refine dataset, displays new data
 function updateTicker(){
@@ -97,14 +133,71 @@ function updateTicker(){
 
         sortedDisclosures.forEach(item => {
             if(item.ticker == itemGlobal.ticker){
-                handleUpdateTicker(item)
+                handleUpdateList(item)
+            }
+        })
+    })
+}
+
+function updateMember(){
+    fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json')
+    .then(res => res.json())
+    .then(res => {
+        let oldList = document.querySelector('#transactionsUl')
+        oldList.remove()
+
+        let containerDiv = document.querySelector('#transactionsList')
+        containerDiv.classList = false
+
+        let header = document.querySelector('#transactionsHeader')
+        let name = nameFix(itemGlobal)
+        header.textContent = `Recent Transactions by ${name}:`
+
+        let transactionsUl = document.createElement('ul')
+        transactionsUl.id = 'transactionsUl'
+        containerDiv.append(transactionsUl)
+
+        let sortedDisclosures = res.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime());
+        // console.log(sortedDisclosures)
+
+        sortedDisclosures.forEach(item => {
+            if(item.representative == itemGlobal.representative){
+                handleUpdateList(item)
+            }
+        })
+    })
+}
+
+function updateDate(){
+    fetch('https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json')
+    .then(res => res.json())
+    .then(res => {
+        let oldList = document.querySelector('#transactionsUl')
+        oldList.remove()
+
+        let containerDiv = document.querySelector('#transactionsList')
+        containerDiv.classList = false
+
+        let header = document.querySelector('#transactionsHeader')
+        header.textContent = `Congressional Transactions on ${new Date(itemGlobal.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}:`
+
+        let transactionsUl = document.createElement('ul')
+        transactionsUl.id = 'transactionsUl'
+        containerDiv.append(transactionsUl)
+
+        let sortedDisclosures = res.sort((a, b) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime());
+        // console.log(sortedDisclosures)
+
+        sortedDisclosures.forEach(item => {
+            if(item.transaction_date == itemGlobal.transaction_date){
+                handleUpdateList(item)
             }
         })
     })
 }
 
 //handles updating new data for display
-function handleUpdateTicker(item){
+function handleUpdateList(item){
     let transactionsUl = document.querySelector('#transactionsUl')
     let transactionLi = document.createElement('li')
     let date = document.createElement('h7')
@@ -112,14 +205,18 @@ function handleUpdateTicker(item){
     let description = document.createElement('p')
     let amount = document.createElement('p')
 
-    date.textContent = `Date: ${item.transaction_date}`
-    member.textContent = `Congress Member: ${item.representative}`
+    date.textContent = `Date: ${new Date(item.transaction_date).toLocaleDateString('en-us', {month:"short", day:"numeric", year:"numeric", })}`
+    let name = nameFix(item)
+    member.textContent = `Congress Member: ${name}`
     description.textContent = `Description: ${item.asset_description}`
     amount.textContent = `Amount: ${item.amount}`
 
     transactionLi.append(date, member, description, amount)
     transactionsUl.append(transactionLi)
 }
+
+
+
 
 //get chart data:
 function renderChartData(){
